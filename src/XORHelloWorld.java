@@ -49,9 +49,15 @@ public class XORHelloWorld {
     /** 
      * The input necessary for XOR. 
      */  
-    public static double XOR_INPUT[][] = { { 0.0, 0.0 }, { 1.0, 0.0 },  
+	public static double XOR_INPUT1[][] = { { 0.0 }, { 1.0 },  
+        { 0.0, 1.0 }, { 1.0, 1.0 } };  
+	
+	public static double XOR_INPUT2[][] = { { 0.0, 0.0 }, { 1.0, 0.0 },  
             { 0.0, 1.0 }, { 1.0, 1.0 } };  
   
+    public static double XOR_INPUT3[][] = { { 0.0, 0.0, 0.0 }, { 1.0, 0.0, 0.0 },  
+        { 0.0, 1.0, 0.0 }, { 1.0, 1.0, 0.0 } };  
+
     /** 
      * The ideal data necessary for XOR. 
      */  
@@ -63,7 +69,7 @@ public class XORHelloWorld {
      */  
     public static void main(final String args[]) {  
           
-        // create a neural network, without using a factory  
+        /*// create a neural network, without using a factory  
         BasicNetwork network = new BasicNetwork();  
         network.addLayer(new BasicLayer(null,true,2));  
         network.addLayer(new BasicLayer(new ActivationSigmoid(),true,5));  
@@ -95,7 +101,7 @@ public class XORHelloWorld {
                     + ", actual=" + Math.round(output.getData(0)) + ",ideal=" + pair.getIdeal().getData(0));  
         }
           
-        Encog.getInstance().shutdown();
+        Encog.getInstance().shutdown();*/
     	
     	/*NeuralNetwork neuralNetwork = new NeuralNetwork(new int[]{2, 10, 1});
     	
