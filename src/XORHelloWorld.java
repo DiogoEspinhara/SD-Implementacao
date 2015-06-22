@@ -22,6 +22,8 @@
 * http://www.heatonresearch.com/copyright 
 */  
 
+import neuralnetwork.NeuralNetwork;
+
 import org.encog.Encog;  
 import org.encog.engine.network.activation.ActivationSigmoid;
 import org.encog.ml.data.MLData;  
@@ -103,10 +105,15 @@ public class XORHelloWorld {
           
         Encog.getInstance().shutdown();*/
     	
-    	/*NeuralNetwork neuralNetwork = new NeuralNetwork(new int[]{2, 10, 1});
-    	
-    	neuralNetwork.train(XOR_INPUT, XOR_IDEAL, 0.1, 0.0001, 10000000);
-    	
-    	System.out.println(neuralNetwork.classify(new double[]{1.0, 0.0})[0]);*/
+    	for (int i = 0; i < 100; i++){
+	    	NeuralNetwork neuralNetwork = new NeuralNetwork(new int[]{2, 10, 1}, "110");    	
+	    	
+	    	neuralNetwork.train(XOR_INPUT2, XOR_IDEAL, 0.003, 0.0001, 1000000);
+	    	System.out.println(i+" = "+neuralNetwork.getError());
+	    	//System.out.println(neuralNetwork.classify(new double[]{0.0, 0.0})[0]);
+	    	//System.out.println(neuralNetwork.classify(new double[]{1.0, 0.0})[0]);
+	    	//System.out.println(neuralNetwork.classify(new double[]{0.0, 1.0})[0]);
+	    	//System.out.println(neuralNetwork.classify(new double[]{1.0, 1.0})[0]);
+    	}
     }  
 }  

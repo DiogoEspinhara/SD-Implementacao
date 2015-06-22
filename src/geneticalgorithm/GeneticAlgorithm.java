@@ -11,7 +11,7 @@ public class GeneticAlgorithm {
 
 	//Atributos de objeto.
 	private int sizeChromosome, sizePopulation, quantityMaximumGenerations, quantityMaximumEpochs;
-	private double rateCrossover, rateMutation, acceptsRateAccuracy, learningRate;
+	private double rateCrossover, rateMutation, acceptsError, learningRate;
 	private int[] layersHiddenAndOutput;
 	private HashMap<String, double[][]> listOfInputs;
 	private double[][] outputs;
@@ -19,15 +19,15 @@ public class GeneticAlgorithm {
 	
 	public GeneticAlgorithm(HashMap<String, double[][]> listOfInputs, double[][] outputs, int[] layersHiddenAndOutput, int sizePopulation, int sizeChromosome
 			, int quantityMaximumGenerations, double rateCrossover
-			, double rateMutation, double acceptsRateAccuracy
+			, double rateMutation, double acceptsError
 			, double learningRate, int quantityMaximumEpochs) {
 		
-		this(listOfInputs, outputs, layersHiddenAndOutput, sizePopulation, sizeChromosome, quantityMaximumGenerations, rateCrossover, rateMutation, acceptsRateAccuracy, learningRate, quantityMaximumEpochs, null);
+		this(listOfInputs, outputs, layersHiddenAndOutput, sizePopulation, sizeChromosome, quantityMaximumGenerations, rateCrossover, rateMutation, acceptsError, learningRate, quantityMaximumEpochs, null);
 	}
 	
 	public GeneticAlgorithm(HashMap<String, double[][]> listOfInputs, double[][] outputs, int[] layersHiddenAndOutput, int sizePopulation, int sizeChromosome
 			, int quantityMaximumGenerations, double rateCrossover
-			, double rateMutation, double acceptsRateAccuracy
+			, double rateMutation, double acceptsError
 			, double learningRate, int quantityMaximumEpochs
 			, String[] firstPopulation) {
 		//Inicializa os atributos.
@@ -39,7 +39,7 @@ public class GeneticAlgorithm {
 		this.quantityMaximumGenerations = quantityMaximumGenerations;
 		this.rateCrossover = rateCrossover;
 		this.rateMutation = rateMutation;
-		this.acceptsRateAccuracy = acceptsRateAccuracy;
+		this.acceptsError = acceptsError;
 		this.learningRate = learningRate;
 		this.quantityMaximumEpochs = quantityMaximumEpochs;
 		
@@ -56,6 +56,13 @@ public class GeneticAlgorithm {
 		
 	public NeuralNetwork start(){
 		
+		//Variável de referência para referenciar o objeto NeuralNetwork com melhor o resultado.
+		NeuralNetwork bestNeuralNetwork = null;
+		
+		//Instancia um objeto HashMap para armazenar resultados de redes neurais. 
+		//Isso evitará redundâncias de processamento entre arquiteturas identicas.
+		HashMap<String, NeuralNetwork> tableOfNeuralNetworksPrevious = new HashMap<String, NeuralNetwork>();
+		
 		//Variável local para referenciar o vetor de String que contém a população corrente(atual).
 		//Inicializa o seu valor com o valor(endereço) do atributo firstPopulation.
 		String[] population = firstPopulation;
@@ -63,49 +70,61 @@ public class GeneticAlgorithm {
 		//Instancia um objeto ArrayList para armazenar os objetos NeuralNetwork de cada hipótese(cromossomo).
 		ArrayList<NeuralNetwork> listOfNeuralNetworks = new ArrayList<NeuralNetwork>(); 
 		
-		//Variável local para armazenar a probabilidade acumulada entre os objetos NeuralNetwork gerados.
-		double acumulateRate = 0;	
-		
 		//Fica em loop enquanto não ultrapassar a quantidade de gerações, e não atingir a taxa de erro aceita. 
 		for (int g = 1; g <= quantityMaximumGenerations; g++){
+			
+			//System.out.println("Geração "+g);
 			
 			//Percorre as hipóteses(cromossomos) da geração g.
 			for (String chromosome : population){
 				
-				//Instancia um novo vetor de inteiros para determinar as quantidades de unidades em cada camada da rede neural referente ao cromossomo corrente.
-				int[] layers = new int[layersHiddenAndOutput.length + 1];
-				layers[0] = chromosome.replace("0", "").length();
-				System.arraycopy(layersHiddenAndOutput, 0, layers, 1, layersHiddenAndOutput.length);			
+				//Variável local para referenciar o objeto NeuralNetwork corrente.
+				NeuralNetwork neuralNetworkChromosome = null;
 				
-				//Instancia um objeto NeuralNetwork para a população.
-				NeuralNetwork neuralNetworkChromosome = new NeuralNetwork(layers, chromosome);
-				
-				try{
-				//Executa o treinamento da rede neural referente ao cromossomo corrente.
-				neuralNetworkChromosome.train(listOfInputs.get(chromosome), outputs, learningRate, acceptsRateAccuracy, quantityMaximumEpochs);
-				}catch(Exception e){
-					e.printStackTrace();
+				//Verifica se a hipótese atual não foi ainda processada anteriormente.
+				if (! tableOfNeuralNetworksPrevious.containsKey(chromosome)){
+					
+					//Instancia um novo vetor de inteiros para determinar as quantidades de unidades em cada camada da rede neural referente ao cromossomo corrente.
+					int[] layers = new int[layersHiddenAndOutput.length + 1];
+					layers[0] = chromosome.replace("0", "").length();
+					System.arraycopy(layersHiddenAndOutput, 0, layers, 1, layersHiddenAndOutput.length);			
+					
+					//Instancia um objeto NeuralNetwork para a população.
+					neuralNetworkChromosome = new NeuralNetwork(layers, chromosome);
+					
+					//Executa o treinamento da rede neural referente ao cromossomo corrente.
+					neuralNetworkChromosome.train(listOfInputs.get(chromosome), outputs, learningRate, acceptsError, quantityMaximumEpochs);
+					
+					//Adiciona na tabela Hash a variável de referência do objeto NeuralNetwork instanciado acima para o cromossomo corrente.
+					tableOfNeuralNetworksPrevious.put(chromosome, neuralNetworkChromosome);
+				}
+				else{
+					//Recupera a variável de referência do objeto NeuralNetwork gerado anteriormente para o cromossomo atual.
+					neuralNetworkChromosome = tableOfNeuralNetworksPrevious.get(chromosome);
 				}
 				
+				//System.out.println(chromosome+" = "+neuralNetworkChromosome.getError());
+				
 				//Verifica se a taxa de erro é menor do que a taxa de erro aceitável.
-				if (neuralNetworkChromosome.getRateAccuracy() >= acceptsRateAccuracy){
+				if (neuralNetworkChromosome.getError() <= acceptsError){
 					//Retorna a referência do objeto NeuralNetwork corrente.
 					return neuralNetworkChromosome;
 				}
-				else{
+				else{					
 					//Adiciona na lista a variável de referência do objeto NeuralNetwork referente ao cromossomo corrente.
 					listOfNeuralNetworks.add(neuralNetworkChromosome);
 					
-					//Incrementa o valor da variável local acumulateRate para o sorteio.
-					acumulateRate += neuralNetworkChromosome.getRateAccuracy();
+					//Verifica se o objeto NeuralNetwork corrente obteve o resultado superior ao melhor resultado encontrado anteriormente.
+					if ((bestNeuralNetwork == null) || (neuralNetworkChromosome.getError() < bestNeuralNetwork.getError())){
+						
+						//Atualiza o valor da variável de referência bestNeuralNetwork com a referência do objeto NeuralNetwork corrente.
+						bestNeuralNetwork = neuralNetworkChromosome;						
+					}
 				}
 			}			
 			
-			//Ordena a lista de objetos NeuralNetwork gerados pelos cromossomos(hipóteses).
-			Collections.sort(listOfNeuralNetworks);
-			
 			//Gera a nova população através do sorteio entre as hipóteses, sendo aquelas com maior aptidão tendo maior probabilidade no sorteio.
-			String[] newPopulation = rafflePopulation(listOfNeuralNetworks, acumulateRate);
+			String[] newPopulation = rafflePopulation(listOfNeuralNetworks);
 			
 			//Executa o método que realiza o crossover entre as hipóteses sorteadas.
 			generateCrossover(newPopulation);
@@ -113,23 +132,15 @@ public class GeneticAlgorithm {
 			//Atualiza o valor da variável population com a referência do vetor com a nova população.
 			population = newPopulation;
 			
-			//Verifica se a geração corrente(atual) é a última.
-			if (g == quantityMaximumGenerations-1){
-				
-				//Retorna a variável de referência do objeto NeuralNetwork no topo da lista.
-				return listOfNeuralNetworks.get(0);
-			}
-			else{
+			//Verifica se a geração corrente(atual) não é a última.
+			if (g != quantityMaximumGenerations-1){				
 				//Limpa a lista de objetos NeuralNetwork da geração corrente.
 				listOfNeuralNetworks.clear();
-				
-				//Limpa(zera) o valor da variável acumulateRate.
-				acumulateRate = 0;
-			}
+			}			
 		}
 		
-		//Retorna nulo caso a execução do método chegue a este comando.
-		return null;
+		//Retorna a variável de referência do objeto NeuralNetwork com o melhor resultado entre as gerações. 
+		return bestNeuralNetwork;
 	}
 	
 	private void generateCrossover(String[] newPopulation) {
@@ -147,14 +158,14 @@ public class GeneticAlgorithm {
 				String firstChild = newPopulation[index].substring(0, positionCrossover)+newPopulation[index+1].substring(positionCrossover, sizeChromosome);
 				String secondChild = newPopulation[index+1].substring(0, positionCrossover)+newPopulation[index].substring(positionCrossover, sizeChromosome);
 				
-				//Verifica se o primeiro filho é inválido. Ou seja, igual a 000.
-				if (firstChild.equals("000")){					
+				//Verifica se o primeiro filho é inválido. Ou seja, igual a 0.
+				if (Integer.parseInt(firstChild) == 0){					
 					//Com uma taxa de 50 % de chance, escolhe um dos pais para tomar o lugar do primeiro filho.
 					firstChild = Math.random() < 0.5 ? newPopulation[index] : newPopulation[index + 1];
 				}
 				
-				//Verifica se o segundo filho é inválido. Ou seja, igual a 000.
-				if (secondChild.equals("000")){					
+				//Verifica se o segundo filho é inválido. Ou seja, igual a 0.
+				if (Integer.parseInt(secondChild) == 0){					
 					//Com uma taxa de 50 % de chance, escolhe um dos pais para tomar o lugar do segundo filho.
 					secondChild = Math.random() < 0.5 ? newPopulation[index] : newPopulation[index + 1];
 				}
@@ -177,7 +188,7 @@ public class GeneticAlgorithm {
 		String chromosomeMutant = "";
 		
 		//Enquanto não produzir um cromossomo válido, continua gerando mutações.
-		while ((chromosomeMutant.equals("")) || (chromosomeMutant.equals("000"))){
+		while ((chromosomeMutant.equals("")) || (Integer.parseInt(chromosomeMutant) == 0)){
 			
 			//Limpa o valor da variável local chromossomeMutant para gerar o novo cromossomo através de mutações.
 			chromosomeMutant = "";
@@ -202,33 +213,26 @@ public class GeneticAlgorithm {
 		return chromosomeMutant;
 	}
 
-	private String[] rafflePopulation(ArrayList<NeuralNetwork> listOfNeuralNetworks, double acumulateRate) {
+	private String[] rafflePopulation(ArrayList<NeuralNetwork> listOfNeuralNetworks) {
 		//Instancia um novo vetor para armazenar a nova população.
 		String[] newPopulation = new String[sizePopulation];
 		
 		//Realiza os sizePopulation sorteios.
 		for (int i = 0; i < newPopulation.length; i++){
 			
-			//Gera um número aleatório entre 0 e acumulateRate.
-			double number = Math.random() * acumulateRate;
+			//Instancia um objeto ArrayList de NeuralNetwork para armazenar variáveis de referências de 4 sorteios.
+			ArrayList<NeuralNetwork> listForRaffle = new ArrayList<NeuralNetwork>(4);
 			
-			//Percorre os objetos NeuralNetwork da lista até que o número sorteado seja menor do que a soma acumuada das taxas.
-			double acumulate = 0;
-			
-			loopInternal:
-			for (NeuralNetwork neuralNetwork : listOfNeuralNetworks){
-				
-				//Soma a taxa de acerto do objeto NeuralNetwork ao valor acumulado.
-				acumulate += neuralNetwork.getRateAccuracy();
-				
-				//Verifica se a taxa de acerto do objeto NueralNetwork corrente somado com a acumuada é maior do que o número sorteado.
-				if (number <= acumulate){
-					newPopulation[i] = neuralNetwork.getInputFeatures();
-					
-					//Para o loop interno.
-					break loopInternal;
-				}					
+			//Escolhe aleatoriamente variáveis de referência da lista de NeuralNetworks passada como argumento.
+			for (int j = 0; j < newPopulation.length; j++){
+				listForRaffle.add(listOfNeuralNetworks.get((int) (Math.random() * listOfNeuralNetworks.size())));
 			}
+			
+			//Ordena a lista dos sorteados.
+			Collections.sort(listForRaffle);
+			
+			//Pega a variável do objeto NeuralNetwork da lista do sorteio que contém o menor erro.
+			newPopulation[i] = listForRaffle.get(0).getInputFeatures();
 		}
 		
 		//Retorna a variável de referência do array contendo a nova população.
