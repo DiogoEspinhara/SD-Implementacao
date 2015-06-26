@@ -71,17 +71,16 @@ public class XORHelloWorld {
      */  
     public static void main(final String args[]) {  
           
-        /*// create a neural network, without using a factory  
+        // create a neural network, without using a factory  
         BasicNetwork network = new BasicNetwork();  
         network.addLayer(new BasicLayer(null,true,2));  
-        network.addLayer(new BasicLayer(new ActivationSigmoid(),true,5));  
         network.addLayer(new BasicLayer(new ActivationSigmoid(),true,5));  
         network.addLayer(new BasicLayer(new ActivationSigmoid(),false,1));  
         network.getStructure().finalizeStructure();  
         network.reset();  
         
         // create training data  
-        MLDataSet trainingSet = new BasicMLDataSet(XOR_INPUT, XOR_IDEAL);  
+        MLDataSet trainingSet = new BasicMLDataSet(XOR_INPUT2, XOR_IDEAL);  
           
         // train the neural network  
         final Backpropagation train = new Backpropagation(network, trainingSet);  
@@ -103,17 +102,24 @@ public class XORHelloWorld {
                     + ", actual=" + Math.round(output.getData(0)) + ",ideal=" + pair.getIdeal().getData(0));  
         }
           
-        Encog.getInstance().shutdown();*/
+        Encog.getInstance().shutdown();
     	
-    	for (int i = 0; i < 100; i++){
-	    	NeuralNetwork neuralNetwork = new NeuralNetwork(new int[]{2, 10, 1}, "110");    	
+        try {
+			Thread.sleep(3000);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+        
+        
+    	NeuralNetwork neuralNetwork = new NeuralNetwork(new int[]{2, 5, 1}, "110");    	
 	    	
-	    	neuralNetwork.train(XOR_INPUT2, XOR_IDEAL, 0.003, 0.0001, 1000000);
-	    	System.out.println(i+" = "+neuralNetwork.getError());
-	    	//System.out.println(neuralNetwork.classify(new double[]{0.0, 0.0})[0]);
-	    	//System.out.println(neuralNetwork.classify(new double[]{1.0, 0.0})[0]);
-	    	//System.out.println(neuralNetwork.classify(new double[]{0.0, 1.0})[0]);
-	    	//System.out.println(neuralNetwork.classify(new double[]{1.0, 1.0})[0]);
-    	}
+	    neuralNetwork.train(XOR_INPUT2, XOR_IDEAL, 0.01, 10e-8, 1000000);
+	    System.out.println("Saída: "+neuralNetwork.getError());
+	    System.out.println(neuralNetwork.classify(new double[]{0.0, 0.0})[0]);
+	    System.out.println(neuralNetwork.classify(new double[]{1.0, 0.0})[0]);
+	    System.out.println(neuralNetwork.classify(new double[]{0.0, 1.0})[0]);
+	    System.out.println(neuralNetwork.classify(new double[]{1.0, 1.0})[0]);
+    	
     }  
 }  

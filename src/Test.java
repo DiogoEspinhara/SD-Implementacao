@@ -5,15 +5,11 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.text.DecimalFormat;
-import java.util.Arrays;
-import java.util.Calendar;
 import java.util.HashMap;
 
 import org.encog.Encog;
 
 import neuralnetwork.NeuralNetwork;
-
 
 public class Test {  
   
@@ -39,7 +35,7 @@ public class Test {
 		double[][] OUTPUT = new double[length][1]; 
 		
 		try {
-			BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(new FileInputStream(new File("C:\\Users\\Diogo\\Desktop\\baseSD2.csv"))));
+			BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(new FileInputStream(new File("C:\\Users\\Diogo\\Desktop\\baseSD3.csv"))));
 	    	
 			String line;
 			int i = 0;
@@ -54,7 +50,7 @@ public class Test {
 												  , Double.parseDouble(vector[3])
 												  , Double.parseDouble(vector[4])};
 
-					INPUT0001[i] = new double[]{vectorF[3]};
+				    INPUT0001[i] = new double[]{vectorF[3]};
 					INPUT0010[i] = new double[]{vectorF[2]};
 					INPUT0011[i] = new double[]{vectorF[2], vectorF[3]};
 					INPUT0100[i] = new double[]{vectorF[1]};
@@ -99,12 +95,20 @@ public class Test {
 			for (i = 0; i < 100; i++){
 			
 		    	//Instancia um objeto GeneticalAlgorithm para os testes.
-				GeneticAlgorithm geneticAlgorithm = new GeneticAlgorithm(listOfInputs, OUTPUT, new int[]{10, 1}, 4, 4, 10, 0.5, 0.05, 0.00001, 0.6, 5000);
+				//GeneticAlgorithm geneticAlgorithm = new GeneticAlgorithm(listOfInputs, OUTPUT, new int[]{10, 1}, 4, 4, 1000, 0.5, 0.05, 0.00001, 0.6, 50000, new String[]{"1111","1100", "0101", "0001"});
 				
-				//Inicializa o algoritmo genético e pega o objeto NeuralNetwork resultante.
-				NeuralNetwork network = geneticAlgorithm.start();
+				//Inicializa o algoritmo genético.
+				//geneticAlgorithm.start();
 				
-				System.out.println(i+" / "+network.getInputFeatures()+" / "+network.getError());				
+				NeuralNetwork network = new NeuralNetwork(new int[]{4, 10, 1}, "1111");
+				network.train(INPUT1111, OUTPUT, 0.1, 10e-5, 50000);
+				
+				System.out.println(i+" / "+network.getInputFeatures()+" / "+network.getError());	
+				
+				NeuralNetwork network2 = new NeuralNetwork(new int[]{3, 10, 1}, "1011");
+				network2.train(INPUT1011, OUTPUT, 0.1, 10e-5, 50000);
+				
+				System.out.println(i+" / "+network2.getInputFeatures()+" / "+network2.getError());
 			}
 			
 			

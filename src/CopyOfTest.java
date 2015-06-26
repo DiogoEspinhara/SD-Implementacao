@@ -47,12 +47,20 @@ public class CopyOfTest {
 		for (int i = 0; i < 1000; i++){
 		
 	    	//Instancia um objeto GeneticalAlgorithm para os testes.
-			GeneticAlgorithm geneticAlgorithm = new GeneticAlgorithm(listOfInputs, XOR_OUTPUT, new int[]{10, 1}, 2, 3, 100, 0.9, 0.05, 0.05, 0.1, 1000);
+			GeneticAlgorithm geneticAlgorithm = new GeneticAlgorithm(listOfInputs, XOR_OUTPUT, new int[]{5, 1}, 2, 3, 1000, 0.9, 0.05, 0.000001, 0.1, 50000, new String[]{"110", "111"});
 			
 			//Inicializa o algoritmo genético e pega o objeto NeuralNetwork resultante.
-			NeuralNetwork network = geneticAlgorithm.start();
+			geneticAlgorithm.start();
 			
-			System.out.println(network.getInputFeatures()+" / "+network.getError());
+			System.out.println(geneticAlgorithm.getNeuralNetworkActive().getInputFeatures()+" / "+geneticAlgorithm.getNeuralNetworkActive().getError());
+			
+			
+			try {
+				Thread.sleep(3000);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 	}
 

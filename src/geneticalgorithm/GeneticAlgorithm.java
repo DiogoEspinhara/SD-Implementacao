@@ -16,6 +16,17 @@ public class GeneticAlgorithm {
 	private HashMap<String, double[][]> listOfInputs;
 	private double[][] outputs;
 	private String[] firstPopulation;
+	private NeuralNetwork neuralNetworkActive;
+	
+	public GeneticAlgorithm(int[] layersHiddenAndOutput, int sizePopulation, int sizeChromosome, int quantityMaximumGenerations, double rateCrossover, double rateMutation
+			, double acceptsError, double learningRate, int quantityMaximumEpochs) {
+		this(null, null, layersHiddenAndOutput, sizePopulation, sizeChromosome, quantityMaximumGenerations, rateCrossover, rateMutation, acceptsError, learningRate, quantityMaximumEpochs);
+	}
+	
+	public GeneticAlgorithm(int[] layersHiddenAndOutput, int sizePopulation, int sizeChromosome, int quantityMaximumGenerations, double rateCrossover, double rateMutation
+			, double acceptsError, double learningRate, int quantityMaximumEpochs, String[] firstPopulation) {
+		this(null, null, layersHiddenAndOutput, sizePopulation, sizeChromosome, quantityMaximumGenerations, rateCrossover, rateMutation, acceptsError, learningRate, quantityMaximumEpochs, firstPopulation);
+	}	
 	
 	public GeneticAlgorithm(HashMap<String, double[][]> listOfInputs, double[][] outputs, int[] layersHiddenAndOutput, int sizePopulation, int sizeChromosome
 			, int quantityMaximumGenerations, double rateCrossover
@@ -54,8 +65,10 @@ public class GeneticAlgorithm {
 		}
 	}
 		
-	public NeuralNetwork start(){
-		
+	/**
+	 * Método utilizado para executar o algoritmo genético e identificar qual o melhor objeto NeuralNetwork.
+	 */
+	public void start(){		
 		//Variável de referência para referenciar o objeto NeuralNetwork com melhor o resultado.
 		NeuralNetwork bestNeuralNetwork = null;
 		
@@ -71,6 +84,7 @@ public class GeneticAlgorithm {
 		ArrayList<NeuralNetwork> listOfNeuralNetworks = new ArrayList<NeuralNetwork>(); 
 		
 		//Fica em loop enquanto não ultrapassar a quantidade de gerações, e não atingir a taxa de erro aceita. 
+		LoopGeneration:
 		for (int g = 1; g <= quantityMaximumGenerations; g++){
 			
 			//System.out.println("Geração "+g);
@@ -107,8 +121,11 @@ public class GeneticAlgorithm {
 				
 				//Verifica se a taxa de erro é menor do que a taxa de erro aceitável.
 				if (neuralNetworkChromosome.getError() <= acceptsError){
-					//Retorna a referência do objeto NeuralNetwork corrente.
-					return neuralNetworkChromosome;
+					//Atualiza a variável local bestNeuralNetwork.
+					bestNeuralNetwork = neuralNetworkChromosome;
+					
+					//Para a execução do loop de gerações.
+					break LoopGeneration;
 				}
 				else{					
 					//Adiciona na lista a variável de referência do objeto NeuralNetwork referente ao cromossomo corrente.
@@ -139,10 +156,14 @@ public class GeneticAlgorithm {
 			}			
 		}
 		
-		//Retorna a variável de referência do objeto NeuralNetwork com o melhor resultado entre as gerações. 
-		return bestNeuralNetwork;
+		//Atualiza o valor do atributo neuralNetworkActive com a variável de referência do objeto NeuralNetwork com o melhor resultado.
+		this.neuralNetworkActive = bestNeuralNetwork;		
 	}
 	
+	/**
+	 * Método usado para realizar o cruzamento entre as melhores hipóteses(cromossomos) passados como argumento.
+	 * @param newPopulation
+	 */
 	private void generateCrossover(String[] newPopulation) {
 		//Gera um número randômico entre 1 e sizeChromosome - 1.
 		//Necessário para identificar a posição do crossover.
@@ -182,6 +203,11 @@ public class GeneticAlgorithm {
 		}
 	}
 	
+	/**
+	 * Método utilizado para realizar mutações em um determinado cromossomo(hipótese).
+	 * @param chromosome
+	 * @return
+	 */
 	private String generateMutation(String chromosome){
 		
 		//Variável local para receber a String binária da hipótese com a mutação.
@@ -213,6 +239,12 @@ public class GeneticAlgorithm {
 		return chromosomeMutant;
 	}
 
+	/**
+	 * Método para executar o sorteio entre as hipóteses relacionadas a cada objeto NeuralNetwork. 
+	 * O objeto NeuralNetwork com menor erro tem maior probabilidade de ser sorteado.
+	 * @param listOfNeuralNetworks
+	 * @return
+	 */
 	private String[] rafflePopulation(ArrayList<NeuralNetwork> listOfNeuralNetworks) {
 		//Instancia um novo vetor para armazenar a nova população.
 		String[] newPopulation = new String[sizePopulation];
@@ -239,6 +271,10 @@ public class GeneticAlgorithm {
 		return newPopulation;
 	}
 
+	/**
+	 * Método para gerar um array de Strings binárias contendo uma população de hipóteses(cromossomos).
+	 * @return
+	 */
 	private String[] generatePopulation(){
 		
 		//Instancia um vetor para armazenar a população(cromossomos).
@@ -264,5 +300,53 @@ public class GeneticAlgorithm {
 		
 		//Retorna a variável de referência do vetor population gerado acima.
 		return population;
+	}
+	
+	/**
+	 * Método utilizado para atualizar os dados e iniciar o algoritmo genético novamente para selecionar uma rede neural com melhor acerto.
+	 * @param listOfInputs
+	 * @param outputs
+	 */
+	public void updateDataAndStart(HashMap<String, double[][]> listOfInputs, double[][] outputs){
+		
+		//Atualiza o valor do atributo listOfInputs com a variável de referência passada como argumento.
+		this.listOfInputs = listOfInputs;
+		
+		//Atualiza o valor do atributo outputs.
+		this.outputs = outputs;
+		
+		//Inicia a execução do algoritmo genético.
+		start();		
+	}
+	
+	/**
+	 * Método para identificar se já existe uma rede neural ativa.
+	 * @return
+	 */
+	public boolean isNeuralNetworkActive(){
+		return (neuralNetworkActive != null);
+	}
+	
+	/**
+	 * Método para retornar a variável de referência do objeto NeuralNetwork ativo(atual).
+	 * @return
+	 */
+	public NeuralNetwork getNeuralNetworkActive(){
+		return neuralNetworkActive;
+	}
+	
+	/**
+	 * Método para executar uma classificação da rede neural e predizer a quantidade estimada de VMs.
+	 * @param inputs
+	 * @return
+	 */
+	public int getPrediction(double[] input){
+		
+		//Pega a variável de referência do objeto NeuralNetwork corrente(atual). 
+		//Evita que ocorra erros quando a rede neural atual for substituída.
+		NeuralNetwork network = neuralNetworkActive;
+		
+		//Executa a classificação da rede neural e retorna a saída da rede neural.
+		return (int) Math.round(network.classify(input)[0] * 100);
 	}
 }
