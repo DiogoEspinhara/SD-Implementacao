@@ -1,5 +1,8 @@
 
-import org.libvirt.*;
+import org.libvirt.Connect;
+import org.libvirt.Domain;
+import org.libvirt.LibvirtException;
+
 
 public class MainLibVirtTest {
 	
