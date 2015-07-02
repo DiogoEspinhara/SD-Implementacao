@@ -10,7 +10,7 @@ import java.util.HashMap;
 public class DataBaseHelper {
 
 	
-	public static HashMap<String, double[][]> getDataBase() throws NumberFormatException, IOException{
+	public static HashMap<String, double[][]> getDataBase(String filePath) throws NumberFormatException, IOException{
 		int length = 50;
 		double[][] INPUT0001 = new double[length][1];
 		double[][] INPUT0010 = new double[length][1];
@@ -29,7 +29,7 @@ public class DataBaseHelper {
 		double[][] INPUT1111 = new double[length][4];
 		double[][] OUTPUT = new double[length][1]; 
 		
-		BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(new FileInputStream(new File("C:\\Users\\Diogo\\Desktop\\baseSD3.csv"))));
+		BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(new FileInputStream(new File(filePath))));
     	
 		String line;
 		int i = 0;
@@ -60,7 +60,7 @@ public class DataBaseHelper {
 				INPUT1110[i] = new double[]{vectorF[0],vectorF[1], vectorF[2]};
 				INPUT1111[i] = new double[]{vectorF[0],vectorF[1], vectorF[2], vectorF[3]};
 				
-				OUTPUT[i] = new double[]{vectorF[4]};
+				OUTPUT[i] = new double[]{Math.round(vectorF[4] * 100.0) / 100.0};
 
 				i++;
 			}

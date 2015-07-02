@@ -340,13 +340,13 @@ public class GeneticAlgorithm {
 	 * @param inputs
 	 * @return
 	 */
-	public int getPrediction(double[] input){
+	public double getPrediction(double[] input){
 		
 		//Pega a variável de referência do objeto NeuralNetwork corrente(atual). 
 		//Evita que ocorra erros quando a rede neural atual for substituída.
 		NeuralNetwork network = neuralNetworkActive;
 		
 		//Executa a classificação da rede neural e retorna a saída da rede neural.
-		return (int) Math.round(network.classify(input)[0] * 100);
+		return network.classify(input)[0];
 	}
 }
