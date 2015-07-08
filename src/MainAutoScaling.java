@@ -8,7 +8,7 @@ public class MainAutoScaling {
 		
 		
 		//Instancia um objeto Manager e começa a executar o gerenciador.
-		Manager manager = new Manager(10, 0.25, 5);
+		Manager manager = new Manager(10, 0.1, 5);
 		manager.start();
 	}
 

@@ -1,11 +1,13 @@
 package neuralnetwork;
 
 import org.encog.engine.network.activation.ActivationSigmoid;
+import org.encog.ml.data.folded.FoldedDataSet;
 import org.encog.neural.data.NeuralDataSet;
 import org.encog.neural.data.basic.BasicNeuralDataSet;
 import org.encog.neural.networks.BasicNetwork;
 import org.encog.neural.networks.layers.BasicLayer;
 import org.encog.neural.networks.training.Train;
+import org.encog.neural.networks.training.cross.CrossValidationKFold;
 import org.encog.neural.networks.training.propagation.resilient.ResilientPropagation;
 
 public class NeuralNetwork implements Comparable<NeuralNetwork>{
@@ -59,7 +61,7 @@ public class NeuralNetwork implements Comparable<NeuralNetwork>{
 			//Verifica se é a última camada.
 			else if (i == layers.length-1){
 				//Adiciona a camada de saída.
-				basicNetwork.addLayer(new BasicLayer(new ActivationSigmoid(), false, layers[i]));
+				basicNetwork.addLayer(new BasicLayer(null/*new ActivationSigmoid()*/, false, layers[i]));
 			}
 			else{
 				//Adiciona na rede a camada intermediária(oculta) corrente.
@@ -77,26 +79,37 @@ public class NeuralNetwork implements Comparable<NeuralNetwork>{
 	public void train(double[][] inputs, double[][] outputs, double rate, double acceptsError, int quantityMaximumEpochs){
 		
 		//Instancia um objeto MLDataSet para conter a base de treinamento.
-		//MLDataSet trainingSet = new BasicMLDataSet(inputs, outputs);
 		NeuralDataSet trainingSet = new BasicNeuralDataSet(inputs, outputs);
 		
+		//Instancia um objeto FolderDataSet para ser utilizado no treinamento da rede neural.
+		FoldedDataSet foldedDataSet = new FoldedDataSet(trainingSet);
+		
 		//Instancia um objeto ResilientPropagation
-		final Train train = new ResilientPropagation(basicNetwork, trainingSet);
+		final Train train = new ResilientPropagation(basicNetwork, foldedDataSet, rate, 0.2);
+		
+		//Instancia um objeto CrossValidationKFold para realizar o treinamento com validação cruzada.
+		final CrossValidationKFold trainFold = new CrossValidationKFold(train, 4);
 				
+		//Variável local para identificar a quantidade de épocas atual.
+		int epochs = 0;
+		
 		//Enquanto não atingir a taxa de erro desejada, e a não ultrapassar a quantidade máxima de épocas. 
 		do {
 			
+			//Incrementa o valor da variável local epochs.
+			epochs++;
+			
 			//Executa o BackPropagation.
-			train.iteration();			
+			trainFold.iteration();			
 			
 			//System.out.println(inputFeatures+"# Iteration #" + backPropagation.getIteration() + " Error:" + backPropagation.getError());			
-		} while ((train.getError() > acceptsError) && (train.getIteration() < quantityMaximumEpochs));
+		} while ((trainFold.getError() > acceptsError) && (epochs < quantityMaximumEpochs));
 		
 		//Executa o método que finaliza o treinamento da rede neural.
-		train.finishTraining();
+		trainFold.finishTraining();
 		
 		//Atualiza o valor do atributo rateError com o valor do erro do objeto BackPropagation atual.
-		this.error = Math.abs(train.getError());
+		this.error = Math.abs(trainFold.getError());
 	}
 	
 	public double[] classify(double[] input){

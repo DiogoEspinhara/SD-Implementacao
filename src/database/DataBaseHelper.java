@@ -11,7 +11,7 @@ public class DataBaseHelper {
 
 	
 	public static HashMap<String, double[][]> getDataBase(String filePath) throws NumberFormatException, IOException{
-		int length = 50;
+		int length = 500;
 		double[][] INPUT0001 = new double[length][1];
 		double[][] INPUT0010 = new double[length][1];
 		double[][] INPUT0011 = new double[length][2];

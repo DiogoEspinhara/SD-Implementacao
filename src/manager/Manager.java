@@ -1,6 +1,7 @@
 package manager;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashMap;
 
 import neuralnetwork.NeuralNetwork;
@@ -12,13 +13,13 @@ public class Manager {
 	//Atributos de objeto.
 	private GeneticAlgorithm geneticAlgorithm;
 	private NeuralNetwork defaultNeuralNetwork;
-	private int quantityOfVMs;
+	private int quantityOfVMs, errorGenericAlgoritm;
 	private double secondsForDecisions, secondsForUpdateData;
 	private Thread threadPrediction, threadUpdateData;
 	private HashMap<String, double[][]> listOfInputs;
 	
 	//Atributos de testes.
-	private int errorDefault = 0, errorGenericAlgoritm = 0;
+	private int errorDefault = 0;
 	private boolean isUpdateData = false;
 	private HashMap<String, double[][]> listOfInputsTest;
 	
@@ -29,7 +30,7 @@ public class Manager {
 		this.secondsForUpdateData = secondsForUpdateData;
 		
 		//Instancia um objeto GeneticAlgorithm para o módulo preditor.
-		geneticAlgorithm = new GeneticAlgorithm(new int[]{10, 1}, 4, 4, 1000, 0.3, 0.05, 10e-5, 0.1, 50000);
+		geneticAlgorithm = new GeneticAlgorithm(new int[]{10, 1}, 4, 4, 100, 0.9, 0.05, 10e-5, 0.05, 5000);
 		
 		//Instancia um objeto NeuralNetwork com todas as entradas para os testes.
 		defaultNeuralNetwork = new NeuralNetwork(new int[]{4, 10, 1}, "1111");
@@ -92,7 +93,7 @@ public class Manager {
 					//Enquanto não existir uma rede neural válida, espera.
 					while((geneticAlgorithm.isNeuralNetworkActive() == false) || (isUpdateData)){
 						Thread.sleep(500);
-					}					
+					} 					
 						
 					//Pega o vetor atual de entrada para a classificação.
 					double[][] vectorInputs = listOfInputsTest.get(geneticAlgorithm.getNeuralNetworkActive().getInputFeatures());
@@ -110,8 +111,9 @@ public class Manager {
 					errorGenericAlgoritm += Math.abs(resultPrediction - target);
 					errorDefault += Math.abs(resultPredictionDefault - target);
 					
-					System.out.println("Algoritmo Genético "+geneticAlgorithm.getNeuralNetworkActive().getInputFeatures()+" Somatório dos Erros: "+errorGenericAlgoritm);
-					System.out.println("Rede Neural Padrão "+defaultNeuralNetwork.getInputFeatures()+" Somatório dos Erros: "+errorDefault);
+					System.out.println(Arrays.toString(input));
+					System.out.println("Algoritmo Genético "+geneticAlgorithm.getNeuralNetworkActive().getInputFeatures()+" Saída: "+resultPrediction+" Target: "+target+" Diferença: "+(target - resultPrediction)+" Somatório dos Erros: "+errorGenericAlgoritm);
+					System.out.println("Rede Neural Padrão "+defaultNeuralNetwork.getInputFeatures()+" Saída: "+resultPredictionDefault+" Target: "+target+" Diferença: "+(target - resultPredictionDefault)+" Somatório dos Erros: "+errorDefault);
 					System.out.println();	
 					
 					//Executa o método que toma uma ação com base na quantidade de VMs estimada.
